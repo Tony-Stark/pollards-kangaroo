@@ -52,7 +52,10 @@ class KangarooClient(multiprocessing.Process):
         if RUN_SANITY:
             #g^(a_i mod p)
             if g ** (self.a_i % p) != self.x_i:
-                raise RuntimeError('SANITY CHECK FAIL' + str(self.a_i) + " " + str(self.x_i))
+                #raise RuntimeError
+                print('SANITY CHECK FAIL: ' + str(self.a_i) + " " + str(self.x_i))
+            else:
+                print('SANITY CHECK PASSED: ' + str(self.a_i) + " " + str(self.x_i))
     
     def jump(self):
         u = random.randint(1, 2*self.mean_step_size)
