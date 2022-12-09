@@ -42,9 +42,13 @@ class KangarooClient(threading.Thread):
 
         KangarooClient.communication_dict[self.uuid] = self.cmd_q
 
+    def s_map(self, x, n):
+        random.seed(prng*x)
+        return random.randint(0, n)
+
     def walk(self,x_i, a_i):
-        a_i = (s_map(x_i, n) + a_i)
-        x_i = (x_i*pow(g, s_map(x_i, n), p)) % p
+        a_i = (self.s_map(x_i, n) + a_i)
+        x_i = (x_i*pow(g, self.s_map(x_i, n), p)) % p
         return x_i, a_i
 
     def run(self):
@@ -64,10 +68,6 @@ class KangarooClient(threading.Thread):
                     self.x_i = x_i * pow(g, u, p)
                     self.a_i = a_i + u
 
-def s_map(x, n):
-    random.seed(prng*x)
-    return random.randint(0, n)
-
 def get_cpu_cores():
     max_cpu_cores = 128
     min_cpu_cores = 1
@@ -85,15 +85,18 @@ def get_cpu_cores():
     return (cpu_cores, max_cpu_cores, min_cpu_cores)
 
 def server():
+    print("starting server")
     parent_msg_channel = queue.Queue()
 
     (cpu_cores, _, _) = get_cpu_cores()
     mean_step_size = cpu_cores*math.sqrt(w)/4
 
+    print("booting tame workers")
     for i in range(cpu_cores/2):
         a_i = w//2 + i*math.floor(mean_step_size)
         t = KangarooClient("tame"+str(i), pow(g, a_i, p), a_i, parent_msg_channel, "tame", mean_step_size)
         t.start()
+    print("done booting tame workers")
     
     for j in range(cpu_cores/2):
         a_i = j*math.floor(mean_step_size)
@@ -133,4 +136,5 @@ def server():
                     return result
 
 
-server()
+if __name__ == "__main__":
+    server()
