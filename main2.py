@@ -24,14 +24,14 @@ n = 1024
 
 prng = random.randint(1, 2**32)
 random.seed(prng)
-
+RUN_SANITY = True
 class KangarooClient(multiprocessing.Process):
     communication_dict = {} # id -> client
 
-    def __init__(self, uuid, x0, exp0,parent_msg_channel: multiprocessing.Queue, kangaroo_type, mean_step_size):
+    def __init__(self, uuid, x_i, a_i,parent_msg_channel: multiprocessing.Queue, kangaroo_type, mean_step_size):
         multiprocessing.Process.__init__(self)
-        self.x0 = x0
-        self.exp0 = exp0
+        self.x_i = x_i
+        self.a_i = a_i
         self.type = kangaroo_type
 
         self.mean_step_size = mean_step_size
@@ -45,27 +45,34 @@ class KangarooClient(multiprocessing.Process):
         random.seed(prng*x)
         return random.randint(0, n)
 
-    def walk(self,x_i, a_i):
-        a_i = (self.s_map(x_i, n) + a_i)
-        x_i = (x_i*pow(g, self.s_map(x_i, n), p)) % p
-        return x_i, a_i
+    def walk(self):
+        self.x_i = (self.x_i*pow(g, self.s_map(self.x_i, n), p)) % p
+        self.a_i = (self.s_map(self.x_i, n) + self.a_i)
+
+        if RUN_SANITY:
+            #g^(a_i mod p)
+            if g ** (self.a_i % p) != self.x_i:
+                raise RuntimeError('SANITY CHECK FAIL' + str(self.a_i) + " " + str(self.x_i))
+    
+    def jump(self):
+        u = random.randint(1, 2*self.mean_step_size)
+        self.x_i = self.x_i * pow(g, u, p)
+        self.a_i = self.a_i + u
 
     def run(self):
         child_pid  = "ficl"
         child_name = multiprocessing.current_process().name
         print("[childs][%s#%s] run.." % (child_name, child_pid))
         while True:
-            x_i, a_i = self.walk(self.x0, self.exp0)
-            self.parent_msg_channel.put_nowait({'x_i': x_i, 'a_i': a_i, 'type': self.type, 'id': self.uuid })
+            self.walk()
+            self.parent_msg_channel.put_nowait({'x_i': self.x_i, 'a_i': self.a_i, 'type': self.type, 'id': self.uuid })
             if not self.cmd_q.empty():
                 msg = self.cmd_q.get_nowait()
                 if msg == "terminate":
                     KangarooClient.communication_dict.pop(self.uuid) # clear dict as best practice
                     return
                 if msg == "jump":
-                    u = random.randint(1, 2*self.mean_step_size)
-                    self.x_i = x_i * pow(g, u, p)
-                    self.a_i = a_i + u
+                    self.jump()
 
 
 def get_cpu_cores():
