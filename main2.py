@@ -145,7 +145,7 @@ def server():
                         print("result found in tame: " + str(result))
                         return result
                     else:
-                        raise RuntimeError("Found wrong sulotion")
+                        raise RuntimeError("Found wrong sulotion: " + str(result))
             else:
                 if client_type == "tame":
                     tame_lookup[client_x_i] = client_a_i
@@ -158,14 +158,18 @@ def server():
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
+<<<<<<< HEAD
                     result = (client_a_i-found_wild) % (p-1)
+=======
+                    result = (client_a_i-found_wild) % p
+>>>>>>> e51f30275c8de5eb870a8b1d19621374d11b15f9
                     print("x_i ", client_x_i, "found_wild = ", found_wild, "client_a_i", client_a_i)
                     print("result found in wild: ",(client_a_i-found_wild) % p ,"or",(-(client_a_i-found_wild)) % p)
                     if pow(g, result, p) == h:
                         print("result found in wild: " + str(result))
                         return result
                     else:
-                        raise RuntimeError("Found wrong sulotion")
+                        raise RuntimeError("Found wrong sulotion: " + str(result))
             else:
                 if client_type == "wild":
                     wild_lookup[client_x_i] = client_a_i
