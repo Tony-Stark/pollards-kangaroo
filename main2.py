@@ -143,7 +143,8 @@ def server():
                     else:
                         raise RuntimeError("Found wrong sulotion")
             else:
-                tame_lookup[client_x_i] = client_x_i
+                if client_type == "tame":
+                    tame_lookup[client_x_i] = client_a_i
 
             if found_wild := wild_lookup.get(client_x_i) is not None:
                 if client_type == "wild":
@@ -156,7 +157,8 @@ def server():
                     else:
                         raise RuntimeError("Found wrong sulotion")
             else:
-                wild_lookup[client_x_i] = client_x_i
+                if client_type == "wild":
+                    wild_lookup[client_x_i] = client_a_i
 
 
 if __name__ == "__main__":
