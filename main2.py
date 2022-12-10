@@ -130,14 +130,7 @@ def server():
             client_a_i = msg['a_i']
             client_x_i = msg['x_i']
             client_id = msg['id']
-            client_msg_channel = KangarooClient.communication_dict[client_id]
-
-            if client_type == "tame":
-                tame_lookup[client_x_i] = client_x_i
-            
-            if client_x_i == "wild":
-                wild_lookup[client_x_i] = client_x_i
-            
+            client_msg_channel = KangarooClient.communication_dict[client_id]            
 
             if found_tame := tame_lookup.get(client_x_i) is not None:
                 if client_type == "tame":
@@ -145,14 +138,25 @@ def server():
                 else:
                     client_msg_channel.put_nowait("terminate")
                     result = (client_a_i-found_tame) % p
-                    return result
+                    if pow(g, result, p) == h:
+                        return result
+                    else:
+                        raise RuntimeError("Found wrong sulotion")
+            else:
+                tame_lookup[client_x_i] = client_x_i
+
             if found_wild := wild_lookup.get(client_x_i) is not None:
                 if client_type == "wild":
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
                     result = (found_wild-client_a_i) % p
-                    return result
+                    if pow(g, result, p) == h:
+                        return result
+                    else:
+                        raise RuntimeError("Found wrong sulotion")
+            else:
+                wild_lookup[client_x_i] = client_x_i
 
 
 if __name__ == "__main__":
