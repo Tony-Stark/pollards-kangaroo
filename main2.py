@@ -138,10 +138,11 @@ def server():
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
-                    result = (client_a_i-found_tame) % p
+                    result = (found_tame-client_a_i) % p
                     print("x_i ", client_x_i, "found_tame = ", found_tame, "client_a_i", client_a_i)
-                    print("result found: ",(found_tame-client_a_i) % p ,"or",(-(found_tame-client_a_i)) % p)
+                    print("result found in tame: ",(found_tame-client_a_i) % p ,"or",(-(found_tame-client_a_i)) % p)
                     if pow(g, result, p) == h:
+                        print("result found in tame: " + str(result))
                         return result
                     else:
                         raise RuntimeError("Found wrong sulotion")
@@ -157,10 +158,11 @@ def server():
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
-                    result = (found_wild-client_a_i) % p
+                    result = (client_a_i-found_wild) % p
                     print("x_i ", client_x_i, "found_tame = ", found_tame, "client_a_i", client_a_i)
-                    print("result found: ",(found_wild-client_a_i) % p ,"or",(-(found_wild-client_a_i)) % p)
+                    print("result found in wild: ",(client_a_i-found_wild) % p ,"or",(-(client_a_i-found_wild)) % p)
                     if pow(g, result, p) == h:
+                        print("result found in wild: " + str(result))
                         return result
                     else:
                         raise RuntimeError("Found wrong sulotion")
