@@ -24,7 +24,8 @@ n = 1024
 
 prng = random.randint(1, 2**32)
 random.seed(prng)
-RUN_SANITY = True
+
+RUN_SANITY = False
 class KangarooClient(multiprocessing.Process):
     communication_dict = {} # id -> client
 
@@ -46,16 +47,16 @@ class KangarooClient(multiprocessing.Process):
         return random.randint(0, n)
 
     def walk(self):
-        self.x_i = (self.x_i*pow(g, self.s_map(self.x_i, n), p)) % p
         self.a_i = (self.s_map(self.x_i, n) + self.a_i)
+        self.x_i = (self.x_i*pow(g, self.s_map(self.x_i, n), p)) % p
 
         if RUN_SANITY:
             #g^(a_i mod p)
-            if g ** (self.a_i % p) != self.x_i:
+            if pow(g,self.a_i, p) != self.x_i:
                 #raise RuntimeError
-                print('SANITY CHECK FAIL: ' + str(self.a_i) + " " + str(self.x_i))
+                print('SANITY CHECK FAIL: ' + str(self.a_i) + " " + str(self.x_i) + " type " + self.type)
             else:
-                print('SANITY CHECK PASSED: ' + str(self.a_i) + " " + str(self.x_i))
+                print('SANITY CHECK PASSED: ' + str(self.a_i) + " " + str(self.x_i)  + " type " + self.type)
     
     def jump(self):
         u = random.randint(1, 2*self.mean_step_size)
@@ -131,7 +132,13 @@ def server():
             client_id = msg['id']
             client_msg_channel = KangarooClient.communication_dict[client_id]
 
-            print(msg)
+            if client_type == "tame":
+                tame_lookup[client_x_i] = client_x_i
+            
+            if client_x_i == "wild":
+                wild_lookup[client_x_i] = client_x_i
+            
+
             if found_tame := tame_lookup.get(client_x_i) is not None:
                 if client_type == "tame":
                     client_msg_channel.put_nowait("jump")
@@ -149,4 +156,5 @@ def server():
 
 
 if __name__ == "__main__":
-    server()
+    res = server()
+    print(res)
