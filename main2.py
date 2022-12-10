@@ -111,7 +111,7 @@ def server():
     
     for j in range(cpu_cores//2):
         a_i = j*math.floor(mean_step_size)
-        proc = KangarooClient("wild"+str(j + cpu_cores), pow(g, a_i, p), a_i, parent_msg_channel, "wild", mean_step_size)
+        proc = KangarooClient("wild"+str(j + cpu_cores), h*pow(g, a_i, p) % p, a_i, parent_msg_channel, "wild", mean_step_size)
         processes.append(proc)
 
     for process in processes:
@@ -132,12 +132,15 @@ def server():
             client_id = msg['id']
             client_msg_channel = KangarooClient.communication_dict[client_id]            
 
-            if found_tame := tame_lookup.get(client_x_i) is not None:
+            found_tame = tame_lookup.get(client_x_i)
+            if found_tame is not None:
                 if client_type == "tame":
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
                     result = (client_a_i-found_tame) % p
+                    print("x_i ", client_x_i, "found_tame = ", found_tame, "client_a_i", client_a_i)
+                    print("result found: ",(found_tame-client_a_i) % p ,"or",(-(found_tame-client_a_i)) % p)
                     if pow(g, result, p) == h:
                         return result
                     else:
@@ -148,12 +151,15 @@ def server():
                 else:
                     wild_lookup[client_x_i] = client_a_i
 
-            if found_wild := wild_lookup.get(client_x_i) is not None:
+            found_wild = wild_lookup.get(client_x_i)
+            if found_wild is not None:
                 if client_type == "wild":
                     client_msg_channel.put_nowait("jump")
                 else:
                     client_msg_channel.put_nowait("terminate")
                     result = (found_wild-client_a_i) % p
+                    print("x_i ", client_x_i, "found_tame = ", found_tame, "client_a_i", client_a_i)
+                    print("result found: ",(found_wild-client_a_i) % p ,"or",(-(found_wild-client_a_i)) % p)
                     if pow(g, result, p) == h:
                         return result
                     else:
